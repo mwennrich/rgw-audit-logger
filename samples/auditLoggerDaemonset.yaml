@@ -9,9 +9,10 @@ kind: PodSecurityPolicy
 metadata:
   name: rgw-audit-logger
 spec:
+  allowedHostPaths:
+  - pathPrefix: /var/lib/rook/rook-ceph/log
   fsGroup:
     rule: RunAsAny
-  privileged: true
   runAsUser:
     rule: RunAsAny
   seLinux:
@@ -19,9 +20,8 @@ spec:
   supplementalGroups:
     rule: RunAsAny
   volumes:
-  - '*'
-  allowedHostPaths:
-  - pathPrefix: /var/lib/rook/rook-ceph/log/
+  - hostPath
+  - secret
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
