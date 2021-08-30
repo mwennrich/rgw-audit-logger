@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rgw-audit-logger
+  namespace: rook-ceph
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: rgw-audit-logger
+spec:
+  fsGroup:
+    rule: RunAsAny
+  privileged: true
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - '*'
+  allowedHostPaths:
+  - pathPrefix: /var/lib/rook/rook-ceph/log/
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rgw-audit-logger
+rules:
+- apiGroups:
+  - extensions
+  resources:
+  - podsecuritypolicies
+  resourceNames:
+  - rgw-audit-logger
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rgw-audit-logger
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rgw-audit-logger
+subjects:
+- apiGroup: ""
+  kind: ServiceAccount
+  name: rgw-audit-logger
+  namespace: rook-ceph
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: rgw-audit-logger
+  namespace: rook-ceph
+  labels:
+    app: rgw-audit-logger
+spec:
+  selector:
+    matchLabels:
+      app: rgw-audit-logger
+  template:
+    metadata:
+      labels:
+        app: rgw-audit-logger
+    spec:
+      serviceAccountName: rgw-audit-logger
+      containers:
+      - args:
+        - /app/rgw-audit-logger
+        image: docker.io/mwennrich/rgw-audit-logger:latest
+        name: rgw-audit-logger
+        env:
+          - name: RGW_OPS_SOCK
+            value: /ceph/ops-log.sock
+        volumeMounts:
+        - name: ceph-log
+          mountPath: /ceph
+      volumes:
+      - name: ceph-log
+        hostPath:
+          path: /var/lib/rook/rook-ceph/log
+          type: Directory
