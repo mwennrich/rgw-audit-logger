@@ -1,3 +1,3 @@
 module github.com/mwennrich/rgw-audit-logger
 
-go 1.17
+go 1.19

@@ -68,6 +68,7 @@ spec:
         app: rgw-audit-logger
     spec:
       serviceAccountName: rgw-audit-logger
+      automountServiceAccountToken: false
       containers:
       - args:
         - /app/rgw-audit-logger
