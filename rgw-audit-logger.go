@@ -68,7 +68,7 @@ if err := c.Close(); err != nil { fmt.Fprintf(os.Stderr, "error closing connecti
 			continue
 		}
 		// do not log read ops (poor mans "audit policy")
-		if !strings.Contains(ol.Operation, "get_") && !strings.Contains(ol.Operation, "list_") && !strings.Contains(ol.Operation, "stat_") {
+if !strings.HasPrefix(ol.Operation, "get_") && !strings.HasPrefix(ol.Operation, "list_") && !strings.HasPrefix(ol.Operation, "stat_") {
 			fmt.Println(string(l))
 		}
 	}
