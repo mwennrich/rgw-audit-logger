@@ -70,7 +70,7 @@ func main() {
 			continue
 		}
 		// do not log read ops (poor mans "audit policy")
-if !strings.HasPrefix(ol.Operation, "get_") && !strings.HasPrefix(ol.Operation, "list_") && !strings.HasPrefix(ol.Operation, "stat_") {
+		if !strings.HasPrefix(ol.Operation, "get_") && !strings.HasPrefix(ol.Operation, "list_") && !strings.HasPrefix(ol.Operation, "stat_") {
 			fmt.Println(string(l))
 		}
 	}
