@@ -46,7 +46,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer c.Close()
+	defer func() {
+		_ = c.Close()
+	}()
 
 	// fetch json-entry from logline
 	re := regexp.MustCompile(`{.*}`)
@@ -66,7 +68,7 @@ func main() {
 			continue
 		}
 		// do not log read ops (poor mans "audit policy")
-		if !(strings.Contains(ol.Operation, "get_") || strings.Contains(ol.Operation, "list_") || strings.Contains(ol.Operation, "stat_")) {
+		if !strings.Contains(ol.Operation, "get_") && !strings.Contains(ol.Operation, "list_") && !strings.Contains(ol.Operation, "stat_") {
 			fmt.Println(string(l))
 		}
 	}
