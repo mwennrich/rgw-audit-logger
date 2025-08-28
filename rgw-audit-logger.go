@@ -47,7 +47,7 @@ func main() {
 		panic(err)
 	}
 	defer func() {
-		_ = c.Close()
+if err := c.Close(); err != nil { fmt.Fprintf(os.Stderr, "error closing connection: %v\n", err) }
 	}()
 
 	// fetch json-entry from logline
