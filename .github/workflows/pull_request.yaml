@@ -1,0 +1,45 @@
+name: Build from pull request
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Figure out if running fork PR
+        id: fork
+        run: '["${{ secrets.DOCKER_REGISTRY_TOKEN }}" == ""] && echo "is_fork_pr=true" >> $GITHUB_OUTPUT || echo "is_fork_pr=false" >> $GITHUB_OUTPUT'
+
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_REGISTRY_USER }}
+          password: ${{ secrets.DOCKER_REGISTRY_TOKEN }}
+        if: steps.fork.outputs.is_fork_pr == 'false'
+
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          args: --timeout=3m
+
+      - name: Build
+        run: |
+          export GIT_TAG_NAME=${GITHUB_HEAD_REF##*/}
+          make dockerimages
+
+      - name: Push
+        run: |
+          export GIT_TAG_NAME=${GITHUB_HEAD_REF##*/}
+          make dockerpush
+        if: steps.fork.outputs.is_fork_pr == 'false'
